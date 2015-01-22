@@ -45,7 +45,7 @@ PUB TestMPU  | MPUcog
 
   debug.start(SERIAL_RX_PIN, SERIAL_TX_PIN, 0, 115200) 'Start cog to allow IO with serial terminal
   MPUcog := Start( SCL_PIN, SDA_PIN, 98)
-
+  ' I'm Elliot and i have updated...
   repeat
     ' gyro info
     debug.str(string("[gx")) 
