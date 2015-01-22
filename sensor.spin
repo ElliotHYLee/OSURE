@@ -9,7 +9,7 @@
 '' The TestMPU routine can be used to verify correct setup of, and
 '' communication with, the MPU-60X0.  Load the object into RAM, then
 '' use f12 to bring up the terminal emulator to see the output.
-''
+''  Hello world
 
 {{
 
