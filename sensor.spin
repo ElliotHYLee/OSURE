@@ -9,7 +9,7 @@
 '' The TestMPU routine can be used to verify correct setup of, and
 '' communication with, the MPU-60X0.  Load the object into RAM, then
 '' use f12 to bring up the terminal emulator to see the output.
-''  Hello world
+''
 
 {{
 
@@ -35,7 +35,7 @@ VAR
   long x0, y0, z0, tx
   long Cog
   long rx, ry, rz, temp, ax, ay, az, arx, ary, prevGx, prevGy, prevGz   'PASM code assumes these to be contiguous
-  long cFilterX,cFilterY,cFilterZ, prevCx, prevCy, prevCz
+  long cFilterX,cFilterY,cFilterZ
   long p
 
 OBJ
@@ -45,52 +45,61 @@ PUB TestMPU  | MPUcog
 
   debug.start(SERIAL_RX_PIN, SERIAL_TX_PIN, 0, 115200) 'Start cog to allow IO with serial terminal
   MPUcog := Start( SCL_PIN, SDA_PIN, 98)
-  ' I'm Elliot and i have updated...
+
   repeat
     ' gyro info
-    debug.str(string("[gx")) 
-    debug.dec(GetRX)
-    debug.str(string("]"))
-    debug.str(string("[gy")) 
-    debug.dec(GetRY)
-    debug.str(string("]")) 
-    debug.str(string("[gz")) 
-    debug.dec(GetRZ)
-    debug.str(string("]"))
+    'debug.str(string("[gx")) 
+    'debug.dec(GetRX)
+    'debug.str(string("]"))
+    'debug.str(string("[gy")) 
+    'debug.dec(GetRY)
+    'debug.str(string("]")) 
+    'debug.str(string("[gz")) 
+   ' debug.dec(GetRZ)
+   ' debug.str(string("]"))
+    'debug.tx(13)
     ' acc info
-    debug.str(string("[ax")) 
-    debug.dec(GetAX)
-    debug.str(string("]"))
-    debug.str(string("[ay")) 
-    debug.dec(GetAY)
-    debug.str(string("]")) 
-    debug.str(string("[az")) 
-    debug.dec(GetAZ)
-    debug.str(string("]"))  
-    debug.tx(13)
+    'debug.str(string("[ax")) 
+    'debug.dec(GetAX)
+    'debug.str(string("]"))
+    'debug.str(string("[ay")) 
+    'debug.dec(GetAY)
+    'debug.str(string("]")) 
+   ' debug.str(string("[az")) 
+   ' debug.dec(GetAZ)
+   ' debug.str(string("]"))
+    'debug.tx(13)
+    
+    ' comp filter info
     debug.str(string("[cx")) 
     debug.dec(GetCX)
     debug.str(string("]"))
+    debug.tx(13) 
     debug.str(string("[cy")) 
     debug.dec(GetCY)
-    debug.str(string("]")) 
+    debug.str(string("]"))
+    debug.tx(13) 
     debug.str(string("[cz")) 
     debug.dec(GetCZ)
     debug.str(string("]"))
+    debug.tx(13) 
     
-PUB GetCX
-  cFilterX := (999*(cFilterX-GetRy*30/20) + 1*GetAx)/1000'(p*(prevCx*1000+GetRx*2) )' + (100-p)*1000*GetAX)
-  'prevCx := cFilterX/1000
+PUB GetCX| currentGx
+  currentGx := GetRx
+  cFilterX := p*(cx*1000+currentGx*2) + (100-p)*1000*GetAX
+  prevGx := currentGx
   return cFilterX
 
-PUB GetCY
-  cFilterY := (999*(cFilterY-GetRx*30/20) + 1*GetAy)/1000'cFilterY := (p*(prevCy*1000+GetRY*2)) '+ (100-p)*1000*GetAY)
-  'prevCy := cFilterY/1000000 
+PUB GetCY| currentGy
+  currentGy := GetRY 
+  cFilterY := p*(cy*1000+GetRY*2) + (100-p)*1000*GetAY
+  prevGy := currentGy
   return cFilterY
   
-PUB GetCZ
-  cFilterZ := (p*(prevCz*1000+GetRX*2)) '+ (100-p)*1000*GetAZ)
-  prevCz := cFilterZ/1000000 
+PUB GetCZ| currentGz
+  currentGz := GetRz
+  cFilterZ := p*(cx*1000+GetRX*2) + (100-p)*1000*GetAZ
+  currentGz := currentGz
   return cFilterZ
 
 PUB Start( SCL, SDA, cFilter) : Status
