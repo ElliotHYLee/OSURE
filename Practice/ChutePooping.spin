@@ -7,7 +7,7 @@ Con
 
 VAR
   long h  'altitude
-  long htarget, currentAltitude
+  long htarget
 OBJ
 
 
@@ -25,10 +25,7 @@ Pub ChutePooping
       'cogstop(this cog id)
     else
       'just keep waiting
+   
 
-PUB getAltitude
-  return currentAltitude
-      
-'I2C funs
-  'cog
+
   
