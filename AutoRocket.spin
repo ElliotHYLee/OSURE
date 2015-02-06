@@ -14,9 +14,7 @@ VAR
   
   'ONLY For Chad and Jackie (PID)
   long pidCogId, pidStack[128]
-  long eulerAnlge[3], targetEulerAngle[3]
-
-  
+  long eulerAnlge[3], targetEulerAngle[3]     
 
 OBJ
    'ONLY FOR Kyle (altitude)
@@ -92,11 +90,11 @@ PUB startPid
 @ return
 }}
   stopPid
-  pidCogId := cognew(runPid, @pidStack) + 1
+  pidCogId := cognew(pid, @pidStack) + 1
 
-PUB runPid
+PUB pid
 {{
-@ PUB PID
+@ PUB pid
 @ Checks calculates PID forever
 @ After pooping,stop controlling
 @ params none
@@ -126,3 +124,7 @@ PUB runPid
 ''=====================================================
 ''Servo Control - David
 ''=====================================================
+
+
+
+
