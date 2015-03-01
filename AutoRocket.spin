@@ -10,16 +10,11 @@ CON
 
 VAR
   'ONLY For Kyle (pooping chute)
-        long poopCogId, targetAltitude, poopStack[128]
+  long poopCogId, targetAltitude, poopStack[128]
   
   'ONLY For Chad and Jackie (PID)
-        long pidCogId, pidStack[128]
-        long eulerAnlge[3], targetEulerAngle[3]
-  'Servo var
-        long          RampFlag
-        long          ZoneClocks
-        long          NoGlitch
-        long          pulse
+  long pidCogId, pidStack[128]
+  long eulerAnlge[3], targetEulerAngle[3]     
 
   'ONLY For David
   long servoPwm, servoPin
@@ -52,7 +47,7 @@ PUB stopChutePoop
 }}
   if poopCogId
     cogstop(poopCogId ~ - 1)
-                     
+
 PUB startChutePoop
 {{
 @ PUB startChutePoop
@@ -116,7 +111,7 @@ PUB pid
 'calculate ouput
 'update the output
 
-
+               
 ''
 ''=====================================================
 ''SD card (gyro + acc) - Done by everyone
@@ -143,34 +138,6 @@ PUB servoStart
     
   
 
-<<<<<<< HEAD
   
-=======
-PUB SeroStart   
-    RampFlag := 0 
-    ZoneClocks := (clkfreq / _1uS * ZonePeriod)                                 'calculate # of clocks per ZonePeriod
-    NoGlitch   := $FFFF_FFFF-(clkfreq / _1uS * NoGlitchWindow)                  'calculate # of clocks for GlitchFree servos. Problem occurs when 'cnt' value rollover is less than the servo's pulse width.                                                                                                                                                                                                                         
-    cognew(@ServoStart,@ZoneClocks)
-    Servo
-PUB Servo 
-    totalElapse:=0
-    baseTime := cnt
-    
-      repeat 
-       outa[motorPin[0]]:= 1                                 'motorPin is the pin the Servo
-       waitcnt(baseTime + clkfreq/1000000*pulse[0])          'pusle equals the length of the pulse => from PID
-       outa[motorPin[0]]:= 0
-
-          'second servo (add in later)  
-       'outa[motorPin[1]]:= 1 
-       'waitcnt(cnt + clkfreq/1000000*pulse[1])
-       'outa[motorPin[1]]:= 0
-          'posibility of multiple motors
-       totalElapse := pulse[0] '+ pulse[1]
-       waitcnt(baseTime + (clkfreq/1000*20 - clkfreq/1000000*totalElapse))  'insert total interval time in place of 20 (possibly #motors x maxPWM) 
-
-      
-
->>>>>>> origin/master
 
 
