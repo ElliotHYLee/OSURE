@@ -16,6 +16,9 @@ VAR
   long pidCogId, pidStack[128]
   long eulerAnlge[3], targetEulerAngle[3]     
 
+  'ONLY For David
+  long servoPwm, servoPin
+  
 OBJ
    'ONLY FOR Kyle (altitude)
    'altimeter : "dddddd"
@@ -28,7 +31,8 @@ PUB Main
 @ params non
 @ return non
 }}
-
+  servoPin := 0
+  servoStart
 
 ''
 ''=====================================================
@@ -124,7 +128,16 @@ PUB pid
 ''=====================================================
 ''Servo Control - David
 ''=====================================================
+PUB servoStart
+  dira[servoPin]:=1
+  repeat
+    outa[servoPin]:=1
+    waitcnt(cnt + clkfreq/1000000*100)
+    outa[servoPin]:=0
+    waitcnt(cnt + clkfreq/1000000*20)
+    
+  
 
-
+  
 
 
