@@ -8,6 +8,10 @@ CON
   _clkmode = xtal1 + pll16x            'defining clock mod
   _xinfreq = 5_000_000                 'defining clock frequency
 
+  'Servo's min and max pose, these constants are specific to a product
+  sMin = 559  '-90 deg
+  sMax = 2443 '+90 deg 
+  
 VAR
   'ONLY For Kyle (pooping chute)
   long poopCogId, targetAltitude, poopStack[128]
@@ -17,12 +21,13 @@ VAR
   long eulerAnlge[3], targetEulerAngle[3]     
 
   'ONLY For David
-  long servoPwm, servoPin
-  
+  long servoPin[2], servoStack[128], servoCogId
+  long servoPosition
 OBJ
-   'ONLY FOR Kyle (altitude)
-   'altimeter : "dddddd"
+ 'ONLY FOR Kyle (altitude)
+ 'altimeter : "dddddd"
 
+  SERVO : "Servo32v7.spin"  
    
 PUB Main
 {{
@@ -31,9 +36,41 @@ PUB Main
 @ params non
 @ return non
 }}
-  servoPin := 0
+  servoPin[0] := 0
   servoStart
 
+  servoPosition := -100
+  repeat
+    servoPosition++
+    waitcnt(cnt + clkfreq/1000*500)
+    if servoPosition >89
+      servoPosition := -100
+
+
+''=====================================================
+''Servo Control - David
+''=====================================================
+PUB servoStart
+  SERVO.Start
+  servoStop
+  servoCogId := cognew(runServo, @servoStack) + 1
+
+PUB servoStop
+  if servoCogId>0
+    'what is the code to stop?
+
+PUB runServo
+  repeat
+    poseServoAt(servoPosition)
+    waitcnt(cnt + clkfreq/1000000*100)
+
+PUB poseServoAt(degree) | y, m
+  m := (sMax-sMin)/180
+  y := m*(degree-90) + sMax
+  Servo.set(servoPin[0], y)
+ 
+
+         
 ''
 ''=====================================================
 ''Altitude Reading and Pooping Region - Kyle
@@ -125,19 +162,6 @@ PUB pid
 
 
 
-''=====================================================
-''Servo Control - David
-''=====================================================
-PUB servoStart
-  dira[servoPin]:=1
-  repeat
-    outa[servoPin]:=1
-    waitcnt(cnt + clkfreq/1000000*100)
-    outa[servoPin]:=0
-    waitcnt(cnt + clkfreq/1000000*20)
-    
-  
 
   
-
 
