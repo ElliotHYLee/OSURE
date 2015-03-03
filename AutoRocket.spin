@@ -39,12 +39,12 @@ PUB Main
   servoPin[0] := 0
   servoStart
 
-  servoPosition := -100
-  repeat
-    servoPosition++
-    waitcnt(cnt + clkfreq/1000*500)
-    if servoPosition >89
-      servoPosition := -100
+  servoPosition := 0
+'  repeat
+'    servoPosition++
+'    waitcnt(cnt + clkfreq/1000*500)
+'    if servoPosition >89
+'      servoPosition := -100
 
 
 ''=====================================================
@@ -164,4 +164,3 @@ PUB pid
 
 
   
-
