@@ -58,7 +58,8 @@ PUB servoStart
 PUB servoStop
   if servoCogId>0
     'what is the code to stop?
-
+    cogstop(servoCogId ~ - 1) 'For David, <3 Kyle
+    
 PUB runServo
   repeat
     poseServoAt(servoPosition)
@@ -104,7 +105,7 @@ PUB chutePoop
 @ return cogId
 
 }}
-' snensor.get alitude
+'  snensor.get alitude
 '   cog if(htart>current)
 '   poop
 '   turn off
