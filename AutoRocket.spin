@@ -25,7 +25,7 @@ VAR
   long servoPosition
 OBJ
  'ONLY FOR Kyle (altitude)
- 'altimeter : "dddddd"
+  alt : "29124_altimeter"
 
   SERVO : "Servo32v7.spin"  
    
