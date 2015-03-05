@@ -31,7 +31,8 @@ Pub ChutePooping   | j, direction, a, olda, base, stop, elapsed
   repeat
     olda := a                                            ' store previous alitiude in olda
     a := alt.altitude(alt.average_press)                 ' Get the current altitude in cm, from new average local pressure.
-    'pst.dec(a)
+    pst.newline
+    pst.dec(a)
     pst.str(string(pst#HM, "Altitude:"))                 ' Print header.
     pst.str(alt.formatn(a, alt#METERS | alt#CECR, 8))    ' Print altitude in meters, clear-to-end, and CR.
     pst.str(alt.formatn(a, alt#TO_FEET | alt#CECR, 17))  ' Print altitude in feet, clear-to-end, and CR.

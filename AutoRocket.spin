@@ -1,6 +1,6 @@
 {{
 This code is written by The Ohio State University Rocket Team
-No copy rights......
+No copy rights...... Go Bucks
 }}
 
 
@@ -11,10 +11,14 @@ CON
   'Servo's min and max pose, these constants are specific to a product
   sMin = 559  '-90 deg
   sMax = 2443 '+90 deg 
+
   
+  'Kyle's constants
+  START_ALT     = 800                'Your starting altitude in feet.
+  chutePIN = 2                       'the I/O pin number of the parachute pooping device 
 VAR
   'ONLY For Kyle (pooping chute)
-  long poopCogId, targetAltitude, poopStack[128]
+  long poopCogId, poopStack[128]
   
   'ONLY For Chad and Jackie (PID)
   long pidCogId, pidStack[128]
@@ -26,7 +30,7 @@ VAR
 OBJ
  'ONLY FOR Kyle (altitude)
   alt : "29124_altimeter"
-
+  
   SERVO : "Servo32v7.spin"  
    
 PUB Main
@@ -38,7 +42,7 @@ PUB Main
 }}
   servoPin[0] := 0
   servoStart
-
+  
   servoPosition := 0
 '  repeat
 '    servoPosition++
@@ -46,7 +50,7 @@ PUB Main
 '    if servoPosition >89
 '      servoPosition := -100
 
-
+   startChutePoop 
 ''=====================================================
 ''Servo Control - David
 ''=====================================================
@@ -96,7 +100,7 @@ PUB startChutePoop
   stopChutePoop
   poopCogId := cognew(chutePoop, @poopStack) + 1
 
-PUB chutePoop
+PUB chutePoop     | j, direction, a, olda, base, stop, elapsed
 {{
 @ PUB chutePoop
 @ Checks current altitude and poop the chute if the condition meets.
@@ -105,10 +109,30 @@ PUB chutePoop
 @ return cogId
 
 }}
-'  snensor.get alitude
-'   cog if(htart>current)
-'   poop
-'   turn off
+  direction := 0   'the direction of the rocket. >0 means going up. <0 means going down
+  j := 0
+                   '(SCL, SDA, true = background  false = foreground)
+  alt.start_explicit(0  , 1  , false)              ' Start altimeter for QuickStart with FOREGROUND processing.
+  alt.set_resolution(alt#HIGHEST)                        ' Set to highest resolution.
+  alt.set_altitude(alt.m_from_ft(START_ALT * 100))       ' Set the starting altitude, based on average local pressure.                  
+  a := alt.altitude(alt.average_press)
+
+  repeat
+    olda := a                                            ' store previous alitiude in olda
+    a := alt.altitude(alt.average_press)                 ' Get the current altitude in cm, from new average local pressure.
+    'check which way we are going
+    if ((a - olda) > 0)  &  (direction < 5)         'we have gone up in altitude, but max it out at 5
+      direction := (direction + 1)                        'increase direction by 1)
+    elseif (a - olda) < 0                               'we have goine down in altitude
+      direction := (direction - 1)                        'decrease direction by 1
+
+    ''if we go down net 5 then pop the parachute
+    if (direction =< -5) & (a > 200000)      ' this makes sure we aren't below 2000 meters before we poop the chute. (a is in cm)
+      dira[chutePIN] := 1    'set the parachute pin to output.
+      outa[chutePIN] := 1    'set the parachute pin to high  (POOPING THE CHUTE)
+      return
+
+
 
 ''
 ''=====================================================
