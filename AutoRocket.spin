@@ -100,7 +100,7 @@ PUB startChutePoop
   stopChutePoop
   poopCogId := cognew(chutePoop, @poopStack) + 1
 
-PUB chutePoop     | j, direction, a, olda, base, stop, elapsed
+PUB chutePoop| j, direction, a, olda, base, stop, elapsed
 {{
 @ PUB chutePoop
 @ Checks current altitude and poop the chute if the condition meets.
@@ -121,13 +121,13 @@ PUB chutePoop     | j, direction, a, olda, base, stop, elapsed
     olda := a                                            ' store previous alitiude in olda
     a := alt.altitude(alt.average_press)                 ' Get the current altitude in cm, from new average local pressure.
     'check which way we are going
-    if ((a - olda) > 0)  &  (direction < 5)         'we have gone up in altitude, but max it out at 5
+    if ((a - olda) > 0)  AND  (direction < 5)         'we have gone up in altitude, but max it out at 5
       direction := (direction + 1)                        'increase direction by 1)
     elseif (a - olda) < 0                               'we have goine down in altitude
       direction := (direction - 1)                        'decrease direction by 1
 
     ''if we go down net 5 then pop the parachute
-    if (direction =< -5) & (a > 200000)      ' this makes sure we aren't below 2000 meters before we poop the chute. (a is in cm)
+    if (direction =< -5) AND (a > 200000)      ' this makes sure we aren't below 2000 meters before we poop the chute. (a is in cm)
       dira[chutePIN] := 1    'set the parachute pin to output.
       outa[chutePIN] := 1    'set the parachute pin to high  (POOPING THE CHUTE)
       return
