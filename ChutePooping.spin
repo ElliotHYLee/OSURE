@@ -23,7 +23,7 @@ Pub ChutePooping   | j, direction, a, olda, base, stop, elapsed
 
   pst.start(38400)                                       ' Start Parallax serial terminal.
                    '(SCL, SDA, true = background  false = foreground)
-  alt.start_explicit(0  , 1  , false)              ' Start altimeter for QuickStart with FOREGROUND processing.
+  alt.start_explicit(15  , 14  , true)              ' Start altimeter for QuickStart with FOREGROUND processing.
   alt.set_resolution(alt#HIGHEST)                        ' Set to highest resolution.
   alt.set_altitude(alt.m_from_ft(START_ALT * 100))       ' Set the starting altitude, based on average local pressure.                  
   a := alt.altitude(alt.average_press)
