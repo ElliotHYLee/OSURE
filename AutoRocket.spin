@@ -53,6 +53,8 @@ PUB Main
    startChutePoop 
 ''=====================================================
 ''Servo Control - David
+''Numberof Cog Used: 2
+
 ''=====================================================
 PUB servoStart
   SERVO.Start
@@ -79,6 +81,7 @@ PUB poseServoAt(degree) | y, m
 ''
 ''=====================================================
 ''Altitude Reading and Pooping Region - Kyle
+''Number Of Cog Used : 2
 ''=====================================================
 PUB stopChutePoop
 {{
@@ -132,11 +135,18 @@ PUB chutePoop| j, direction, a, olda, base, stop, elapsed
       outa[chutePIN] := 1    'set the parachute pin to high  (POOPING THE CHUTE)
       return
 
+''=====================================================
+''Sensor Region 
+''Number of Cog Used : 1
+''=====================================================
 
 
-''
+
+
+
 ''=====================================================
 ''PID Region - Chad & Jackie
+''Number of Cog Used : 1
 ''=====================================================
 PUB stopPid
 {{
@@ -177,6 +187,7 @@ PUB pid
 ''
 ''=====================================================
 ''SD card (gyro + acc) - Done by everyone
+''Number of Cog Used : 1
 ''=====================================================
 
 'init sd card
