@@ -20,13 +20,23 @@ VAR
   'ONLY For Kyle (pooping chute)
   long poopCogId, poopStack[128]
   
-  'ONLY For Chad and Jackie (PID)
+{{  'ONLY For Chad and Jackie (PID)
   long pidCogId, pidStack[128]
   long eulerAnlge[3], targetEulerAngle[3]     
-
+}}
   'ONLY For David
   long servoPin[2], servoStack[128], servoCogId
   long servoPosition
+  'PID Variables
+  long cur_pos        'Real Position
+  long set_pos        'Set Point
+  long K              'PID Gain
+  long cur_error      'Current Error
+  long pre_error      'Previous Error
+  long output         'PID Output
+  long PIDstack[30]      'COG Stack
+  byte PIDcog            'cog number
+  long dt             'Integral Time
 OBJ
  'ONLY FOR Kyle (altitude)
   alt : "29124_altimeter"
@@ -131,6 +141,7 @@ PUB chutePoop| j, direction, a, olda, base, stop, elapsed
 
     ''if we go down net 5 then pop the parachute
     if (direction =< -5) AND (a > 200000)      ' this makes sure we aren't below 2000 meters before we poop the chute. (a is in cm)
+      cogstop(PIDcog)
       dira[chutePIN] := 1    'set the parachute pin to output.
       outa[chutePIN] := 1    'set the parachute pin to high  (POOPING THE CHUTE)
       return
@@ -148,26 +159,47 @@ PUB chutePoop| j, direction, a, olda, base, stop, elapsed
 ''PID Region - Chad & Jackie
 ''Number of Cog Used : 1
 ''=====================================================
-PUB stopPid
-{{
-@ PUB stopPID
-@ Stops PID cog if it's running
-@ params none
-@ return
-}}
-  if pidCogId
-    cogstop(pidCogId ~ - 1)
-    
-PUB startPid
-{{
-@ PUB startPID
-@ Make sure that the cog is not already running. And starts PID cog
-@ params none
-@ return
-}}
-  stopPid
-  pidCogId := cognew(pid, @pidStack) + 1
 
+    
+PUB Start
+''Starts PID controller.  Starts a new cog to run in.
+           ''Current_Addr  = Address of Long Variable holding actual position
+           ''Set_Addr      = Address of Long Variable holding set point
+           ''Gain          = PID Algorithm Gain, ie: large gain = large changes faster, though less precise overall
+           ''Integral_Time = PID Algorithm Integral_Time
+           ''Output_Addr   = Address of Long Variable which holds output of PID algorithm
+
+
+  cur_pos := dtheta
+  set_pos := 0
+  Kp := 1                       'Proportional Gain
+  Ki := 1                       'Integral Gain
+  Kp := 1                       'Derivative Gain
+  dt := 
+  output := servoPosition
+
+  pre_error :=  
+  cur_error :=   
+
+  PIDcog := cognew(Loop, @PIDstack)
+
+PUB Loop | e, P, I, D
+
+repeat
+  long[cur_error] := long[set_pos] - long[cur_pos]
+  P := Kp * long[cur_error]
+  
+  I := I + Ki * long[cur_error] * dt
+  
+  e := long[cur_error] - long[pre_error]
+  D := Ki * e / dt
+  
+  long[pre_error] := long[cur_error]
+
+  long[output] := P + I + D
+
+    
+  waitcnt(clkfreq / 1000 * dt + cnt)  
 PUB pid
 {{
 @ PUB pid
