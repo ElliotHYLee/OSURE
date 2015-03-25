@@ -1,5 +1,5 @@
 'Kyle'
-'popping the chute at a given altitude'
+'popping the chute at a given Pressure altitude WITH SD Writing'
 
 Con
   _clkmode = xtal1 + pll16x            'defining clock mod
@@ -14,28 +14,42 @@ VAR
 
 OBJ
   alt   : "29124_altimeter"
-  pst   : "parallax serial terminal"
-
+  pst   : "parallax serial terminal plus"
+  system : "Propeller Board of Education"
+  sd     : "PropBOE MicroSD"
 
 Pub ChutePooping   | j, direction, a, olda, base, stop, elapsed
+
+system.Clock(80_000_000)
+
   direction := 0   'the direction of the rocket. >0 means going up. <0 means going down
   j := 0
 
-  pst.start(115200)                                       ' Start Parallax serial terminal.
                    '(SCL, SDA, true = background  false = foreground)
   alt.start_explicit(15  , 14  , true)              ' Start altimeter for QuickStart with FOREGROUND processing.
   alt.set_resolution(alt#HIGHEST)                        ' Set to highest resolution.
-  alt.set_altitude(alt.m_from_ft(START_ALT * 100))       ' Set the starting altitude, based on average local pressure.                  
+'  alt.set_altitude(alt.m_from_ft(START_ALT * 100))       ' Set the starting altitude, based on average local pressure.                  
   a := alt.altitude(alt.average_press)
 
-  repeat
+  
+  sd.Mount(0)
+  sd.FileDelete(String("Altitude.txt"))                   'Delete any old files
+  sd.FileNew(String("Altitude.txt"))                      'Make a new file
+  sd.FileOpen(String("Altitude.txt"), "W")                'Open file for writing
+  sd.WriteStr(String("Pressure Altitude in feet"))        'Print Header 
+  
+
+
+
+  repeat  100
     olda := a                                            ' store previous alitiude in olda
     a := alt.altitude(alt.average_press)                 ' Get the current altitude in cm, from new average local pressure.
     pst.newline
     pst.dec(a)
-    pst.str(string(pst#HM, "Altitude:"))                 ' Print header.
+    pst.str(string(pst#HM, "Pressure Altitude:"))                 ' Print header.
     pst.str(alt.formatn(a, alt#METERS | alt#CECR, 8))    ' Print altitude in meters, clear-to-end, and CR.
     pst.str(alt.formatn(a, alt#TO_FEET | alt#CECR, 17))  ' Print altitude in feet, clear-to-end, and CR.
+    sd.WriteByte( a )
 
     'check which way we are going
     if ((a - olda) > 0)  &  (direction < 5)         'we have gone up in altitude, but max it out at 5
@@ -53,4 +67,6 @@ Pub ChutePooping   | j, direction, a, olda, base, stop, elapsed
       pst.rxflush
       pst.char(pst#CS)
 
- 
+  sd.FileClose
+  sd.Unmount
+  sd.Stop    
