@@ -28,8 +28,6 @@ VAR
   long servoPin[2], servoStack[128], servoCogId
   long servoPosition
   'PID Variables
-  long cur_pos        'Real Position
-  long set_pos        'Set Point
   long K              'PID Gain
   long cur_error      'Current Error
   long pre_error      'Previous Error
@@ -161,7 +159,7 @@ PUB chutePoop| j, direction, a, olda, base, stop, elapsed
 ''=====================================================
 
     
-PUB Start
+PUB PIDStart 
 ''Starts PID controller.  Starts a new cog to run in.
            ''Current_Addr  = Address of Long Variable holding actual position
            ''Set_Addr      = Address of Long Variable holding set point
@@ -170,29 +168,26 @@ PUB Start
            ''Output_Addr   = Address of Long Variable which holds output of PID algorithm
 
 
-  cur_pos := dtheta
-  set_pos := 0
   Kp := 1                       'Proportional Gain
   Ki := 1                       'Integral Gain
-  Kp := 1                       'Derivative Gain
+  Kd := 1                       'Derivative Gain
   dt := 
   output := servoPosition
 
-  pre_error :=  
-  cur_error :=   
+  pre_error :=   1
+  cur_error :=   dtheta
 
   PIDcog := cognew(Loop, @PIDstack)
 
 PUB Loop | e, P, I, D
 
 repeat
-  long[cur_error] := long[set_pos] - long[cur_pos]
   P := Kp * long[cur_error]
   
-  I := I + Ki * long[cur_error] * dt
+  'I := I + Ki * long[cur_error] * dt
   
   e := long[cur_error] - long[pre_error]
-  D := Ki * e / dt
+  'D := Ki * e / dt
   
   long[pre_error] := long[cur_error]
 
@@ -200,34 +195,6 @@ repeat
 
     
   waitcnt(clkfreq / 1000 * dt + cnt)  
-PUB pid
-{{
-@ PUB pid
-@ Checks calculates PID forever
-@ After pooping,stop controlling
-@ params none
-@ return none
-
-}}
-
-'read EulerAngles(x,y,z)
-
-'calculate ouput
-'update the output
-
-               
-''
-''=====================================================
-''SD card (gyro + acc) - Done by everyone
-''Number of Cog Used : 1
-''=====================================================
-
-'init sd card
-
-'wirte atidude
-'wirte PID consts..
-
-
 
 
 
