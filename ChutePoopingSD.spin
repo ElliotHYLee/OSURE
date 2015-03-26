@@ -18,10 +18,10 @@ OBJ
   system : "Propeller Board of Education"
   sd     : "PropBOE MicroSD"
 
-Pub ChutePooping   | j, direction, a, olda, base, stop, elapsed
+Pub ChutePooping   | j, direction, a, olda, base, stop, elapsed,  Poop
 
 system.Clock(80_000_000)
-
+  Poop := FALSE
   direction := 0   'the direction of the rocket. >0 means going up. <0 means going down
   j := 0
 
@@ -36,12 +36,12 @@ system.Clock(80_000_000)
   sd.FileDelete(String("Altitude.txt"))                   'Delete any old files
   sd.FileNew(String("Altitude.txt"))                      'Make a new file
   sd.FileOpen(String("Altitude.txt"), "W")                'Open file for writing
-  sd.WriteStr(String("Pressure Altitude in feet"))        'Print Header 
+  sd.WriteStr(String("PressureAltitudeIncm    Direction    Poop"))          'Print Header 
   
 
 
 
-  repeat  100
+  repeat 100000
     olda := a                                            ' store previous alitiude in olda
     a := alt.altitude(alt.average_press)                 ' Get the current altitude in cm, from new average local pressure.
     pst.newline
@@ -49,20 +49,28 @@ system.Clock(80_000_000)
     pst.str(string(pst#HM, "Pressure Altitude:"))                 ' Print header.
     pst.str(alt.formatn(a, alt#METERS | alt#CECR, 8))    ' Print altitude in meters, clear-to-end, and CR.
     pst.str(alt.formatn(a, alt#TO_FEET | alt#CECR, 17))  ' Print altitude in feet, clear-to-end, and CR.
-    sd.WriteByte( a )
+    sd.WriteByte(13)                                     ' Prints a new line in SD Card
+    sd.WriteByte(10)                                     ' Moves Cursor?
+    sd.WriteDec( a )                                     ' Writes the altitude in Feet *100
 
     'check which way we are going
-    if ((a - olda) > 0)  &  (direction < 5)         'we have gone up in altitude, but max it out at 5
+    if ((a - olda) > 0)  &  (direction < 5)         'we have gone up in altitude by 10 cm, but max it out at 5
       direction := (direction + 1)                        'increase direction by 1)
-    elseif (a - olda) < 0                               'we have goine down in altitude
+    elseif (a - olda) < 0                               'we have goine down in altitude by 10 cm
       direction := (direction - 1)                        'decrease direction by 1
-
+  
     pst.newline
     pst.dec(direction)
+    sd.WriteStr(String("    "))
+    sd.WriteDec(direction)
+    sd.WriteStr(String("    "))
     if direction =< -5
+      Poop:=TRUE
       pst.str(string("POOPING CHUTE"))
+      sd.WriteDec(Poop)
       return
-
+    else
+      sd.WriteDec (Poop)
     if (pst.rxcount)                                     ' Respond to any key by clearing screen.
       pst.rxflush
       pst.char(pst#CS)
