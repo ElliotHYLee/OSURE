@@ -5,6 +5,7 @@ No copy rights...... Go Bucks
 
 
 CON
+
   _clkmode = xtal1 + pll16x            'defining clock mod
   _xinfreq = 5_000_000                 'defining clock frequency
 
@@ -15,31 +16,55 @@ CON
   
   'Kyle's constants
   START_ALT     = 800                'Your starting altitude in feet.
-  chutePIN = 2                       'the I/O pin number of the parachute pooping device 
+  chutePIN = 2                       'the I/O pin number of the parachute pooping device
+
+  
 VAR
   'ONLY For Kyle (pooping chute)
-  long poopCogId, poopStack[128]
+  long poopStack[128]
+  byte poopCogId
   
 {{  'ONLY For Chad and Jackie (PID)
   long pidCogId, pidStack[128]
   long eulerAnlge[3], targetEulerAngle[3]     
 }}
+
   'ONLY For David
-  long servoPin[2], servoStack[128], servoCogId
+  long servoPin[2], servoStack[128]
+  byte servoCogId
   long servoPosition
-  'PID Variables
+
+ 'PID Variables
   long K              'PID Gain
   long cur_error      'Current Error
   long pre_error      'Previous Error
   long output         'PID Output
-  long PIDstack[30]      'COG Stack
-  byte PIDcog            'cog number
+  long pidStack[128]      'COG Stack
+  byte pidCogId            'cog number
   long dt             'Integral Time
+
+  long Kp, Ki, Kd
+
+  'ONLY for attitude sensor
+  byte sensorCodId
+  long sensorStack[128]
+
+  ' usb
+  byte usbCogId
+  long usbStack[128]
+  
 OBJ
  'ONLY FOR Kyle (altitude)
   alt : "29124_altimeter"
-  
-  SERVO : "Servo32v7.spin"  
+
+ ' sensor obj
+  sensor : "tier2MPUMPL.spin"
+
+ ' servo obj
+  SERVO : "Servo32v7.spin"
+
+ 'usb obj for debugging
+  usb : "FullDuplexSerial.spin"
    
 PUB Main
 {{
@@ -48,6 +73,13 @@ PUB Main
 @ params non
 @ return non
 }}
+  usb.quickstart
+  startUsb
+
+ 'attitude start
+  startSensor
+
+ 'start pid
   servoPin[0] := 0
   servoStart
   
@@ -58,7 +90,13 @@ PUB Main
 '    if servoPosition >89
 '      servoPosition := -100
 
-   startChutePoop 
+ 'altitude & parachute contrl
+  startChutePoop
+
+ ' pid loop
+ startPid
+
+   
 ''=====================================================
 ''Servo Control - David
 ''Numberof Cog Used: 2
@@ -84,9 +122,6 @@ PUB poseServoAt(degree) | y, m
   y := m*(degree-90) + sMax
   Servo.set(servoPin[0], y)
  
-
-         
-''
 ''=====================================================
 ''Altitude Reading and Pooping Region - Kyle
 ''Number Of Cog Used : 2
@@ -148,18 +183,30 @@ PUB chutePoop| j, direction, a, olda, base, stop, elapsed
 ''Sensor Region 
 ''Number of Cog Used : 1
 ''=====================================================
+PRI stopSensor
+  if sensorCodId
+    cogstop(sensorCodId ~ - 1)
+  
+PRI startSensor 
+  sensor.initSensor(15,14) ' scl, sda, cFilter portion in %
+  sensor.setMpu(%000_11_000, %000_01_000) '2000deg/s, 4g
+  stopSensor
+  sensorCodId:= cognew(runSensor, @sensorStack) + 1
 
-
-
-
+PRI runSensor
+  repeat
+    sensor.run
 
 ''=====================================================
 ''PID Region - Chad & Jackie
 ''Number of Cog Used : 1
 ''=====================================================
 
+PUB stopPid
+  if pidCogId
+    cogstop(pidCogId ~ -1)
     
-PUB PIDStart 
+PUB startPid
 ''Starts PID controller.  Starts a new cog to run in.
            ''Current_Addr  = Address of Long Variable holding actual position
            ''Set_Addr      = Address of Long Variable holding set point
@@ -167,35 +214,55 @@ PUB PIDStart
            ''Integral_Time = PID Algorithm Integral_Time
            ''Output_Addr   = Address of Long Variable which holds output of PID algorithm
 
-
+  
   Kp := 1                       'Proportional Gain
   Ki := 1                       'Integral Gain
   Kd := 1                       'Derivative Gain
-  dt := 
+'  dt := 
   output := servoPosition
 
   pre_error :=   1
-  cur_error :=   dtheta
+'  cur_error :=   dtheta
 
-  PIDcog := cognew(Loop, @PIDstack)
+  stopPid
+  pidCogId := cognew(Loop, @pidStack)  + 1
 
 PUB Loop | e, P, I, D
 
-repeat
-  P := Kp * long[cur_error]
-  
-  'I := I + Ki * long[cur_error] * dt
-  
-  e := long[cur_error] - long[pre_error]
-  'D := Ki * e / dt
-  
-  long[pre_error] := long[cur_error]
-
-  long[output] := P + I + D
-
+  repeat
+    P := Kp * long[cur_error]
     
-  waitcnt(clkfreq / 1000 * dt + cnt)  
+    'I := I + Ki * long[cur_error] * dt
+    
+    e := long[cur_error] - long[pre_error]
+    'D := Ki * e / dt
+    
+    long[pre_error] := long[cur_error]
+   
+    long[output] := P + I + D
+   
+      
+    waitcnt(clkfreq / 1000 * dt + cnt)  
 
 
-
+'=========================
+' usb dialog ONLY for debugging
+'==========================
+PRI stopUsb
+  if sensorCodId
+    cogstop(sensorCodId ~ - 1)
   
+PRI startUsb 
+ 
+  stopUsb
+  usbCogId:= cognew(runUsb, @usbStack) + 1
+
+PRI runUsb
+  repeat
+    sendMsg
+
+
+PRI sendMsg
+
+  usb.
+    
