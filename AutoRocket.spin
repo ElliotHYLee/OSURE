@@ -29,6 +29,9 @@ VAR
   long eulerAnlge[3], targetEulerAngle[3]     
 }}
 
+  ' roll and Euler angle
+  long gyro[3], eAngle[3]
+
   'ONLY For David
   long servoPin[2], servoStack[128]
   byte servoCogId
@@ -91,10 +94,10 @@ PUB Main
 '      servoPosition := -100
 
  'altitude & parachute contrl
-  startChutePoop
+'  startChutePoop
 
  ' pid loop
- startPid
+  startPid
 
    
 ''=====================================================
@@ -174,7 +177,7 @@ PUB chutePoop| j, direction, a, olda, base, stop, elapsed
 
     ''if we go down net 5 then pop the parachute
     if (direction =< -5) AND (a > 200000)      ' this makes sure we aren't below 2000 meters before we poop the chute. (a is in cm)
-      cogstop(PIDcog)
+      cogstop(pidCogId)
       dira[chutePIN] := 1    'set the parachute pin to output.
       outa[chutePIN] := 1    'set the parachute pin to high  (POOPING THE CHUTE)
       return
@@ -207,6 +210,12 @@ PUB stopPid
     cogstop(pidCogId ~ -1)
     
 PUB startPid
+
+  stopPid
+  pidCogId := cognew(Loop, @pidStack)  + 1
+
+PUB Loop 
+
 ''Starts PID controller.  Starts a new cog to run in.
            ''Current_Addr  = Address of Long Variable holding actual position
            ''Set_Addr      = Address of Long Variable holding set point
@@ -224,27 +233,22 @@ PUB startPid
   pre_error :=   1
 '  cur_error :=   dtheta
 
-  stopPid
-  pidCogId := cognew(Loop, @pidStack)  + 1
-
-PUB Loop | e, P, I, D
-
   repeat
-    P := Kp * long[cur_error]
-    
-    'I := I + Ki * long[cur_error] * dt
-    
-    e := long[cur_error] - long[pre_error]
-    'D := Ki * e / dt
-    
-    long[pre_error] := long[cur_error]
-   
-    long[output] := P + I + D
-   
-      
-    waitcnt(clkfreq / 1000 * dt + cnt)  
+    sensor.getEulerAngle(@eAngle)
+    sensor.getGyro(@gyro)
+    calcOutput 
 
+PUB calcOutput | e, P, I, D
 
+  P := Kp * long[cur_error]
+  'I := I + Ki * long[cur_error] * dt
+  e := long[cur_error] - long[pre_error]
+  'D := Ki * e / dt
+  long[pre_error] := long[cur_error]
+  long[output] := P + I + D
+  waitcnt(clkfreq / 1000 * dt + cnt) 
+
+    
 '=========================
 ' usb dialog ONLY for debugging
 '==========================
@@ -261,8 +265,19 @@ PRI runUsb
   repeat
     sendMsg
 
-
 PRI sendMsg
 
-  usb.
-    
+  usb.str(String("gyro:"))
+  usb.dec(gyro[0])
+  usb.str(String(", "))       
+  usb.dec(gyro[1])
+  usb.str(String(", "))       
+  usb.decLn(gyro[2])
+
+  usb.str(String("eAngle:"))
+  usb.dec(eAngle[0])
+  usb.str(String(", "))       
+  usb.dec(eAngle[1])
+  usb.str(String(", "))       
+  usb.decLn(eAngle[2])
+     
