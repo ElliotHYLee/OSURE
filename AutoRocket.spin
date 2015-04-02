@@ -94,9 +94,8 @@ PUB Main
 '      servoPosition := -100
 
  'altitude & parachute contrl
-'  startChutePoop
+  startChutePoop
 
- ' pid loop
   startPid
 
    
