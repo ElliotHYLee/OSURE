@@ -35,7 +35,7 @@ PUB main
   repeat
 
     FDS.clear
-{
+
     printSomeX
     fds.newline
     fds.newline
@@ -51,7 +51,7 @@ PUB main
     fds.newline
     fds.newline
     fds.decln(acc[0]*acc[0]+acc[1]*acc[1]+acc[2]*acc[2])
-}
+
     printMagInfo    
     waitcnt(cnt+clkfreq/10)
 
@@ -218,7 +218,7 @@ PUB getEulerAngle(eAnglePtr)
 
   Long[eAnglePtr][0] := compFilter[0]
   Long[eAnglePtr][1] := compFilter[1]
-  Long[eAnglePtr][2] := avgAcc[2]
+  Long[eAnglePtr][2] := compFilter[2]
   return
   
 PUB getAltitude

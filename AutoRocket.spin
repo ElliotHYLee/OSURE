@@ -47,6 +47,7 @@ VAR
   long dt             'Integral Time
 
   long Kp, Ki, Kd
+  
 
   'ONLY for attitude sensor
   byte sensorCodId
@@ -77,27 +78,22 @@ PUB Main
 @ return non
 }}
   usb.quickstart
-  startUsb
+
 
  'attitude start
   startSensor
-
- 'start pid
+  
+ 'start servo
   servoPin[0] := 0
   servoStart
   
-  servoPosition := 0
-'  repeat
-'    servoPosition++
-'    waitcnt(cnt + clkfreq/1000*500)
-'    if servoPosition >89
-'      servoPosition := -100
-
  'altitude & parachute contrl
-  startChutePoop
+'  startChutePoop
 
   startPid
-
+  usb.str(string("on"))
+  waitcnt(cnt + clkfreq*3)
+  startUsb   
    
 ''=====================================================
 ''Servo Control - David
@@ -205,15 +201,16 @@ PRI runSensor
 ''=====================================================
 
 PUB stopPid
+
   if pidCogId
     cogstop(pidCogId ~ -1)
     
 PUB startPid
 
   stopPid
-  pidCogId := cognew(Loop, @pidStack)  + 1
+  pidCogId := cognew(loop, @pidStack)  + 1
 
-PUB Loop 
+PUB loop 
 
 ''Starts PID controller.  Starts a new cog to run in.
            ''Current_Addr  = Address of Long Variable holding actual position
@@ -226,11 +223,6 @@ PUB Loop
   Kp := 1                       'Proportional Gain
   Ki := 1                       'Integral Gain
   Kd := 1                       'Derivative Gain
-'  dt := 
-  output := servoPosition
-
-  pre_error :=   1
-'  cur_error :=   dtheta
 
   repeat
     sensor.getEulerAngle(@eAngle)
@@ -239,15 +231,8 @@ PUB Loop
 
 PUB calcOutput | e, P, I, D
 
-  P := Kp * long[cur_error]
-  'I := I + Ki * long[cur_error] * dt
-  e := long[cur_error] - long[pre_error]
-  'D := Ki * e / dt
-  long[pre_error] := long[cur_error]
-  long[output] := P + I + D
-  waitcnt(clkfreq / 1000 * dt + cnt) 
-
-    
+  output := gyro[0]
+      
 '=========================
 ' usb dialog ONLY for debugging
 '==========================
@@ -265,6 +250,9 @@ PRI runUsb
     sendMsg
 
 PRI sendMsg
+
+  usb.str(String("output: "))
+  usb.decln(output)
 
   usb.str(String("gyro:"))
   usb.dec(gyro[0])
