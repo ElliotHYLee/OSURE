@@ -1,5 +1,17 @@
 'Kyle'
 'popping the chute at a given Pressure altitude WITH SD Writing'
+'Connect Altimeter SCL to P15
+'Connect Altimeter SDA to P14
+'Connect Altimeter VIN to 3.3V
+'Connect Altimeter GND to GND
+
+'Connect SDCard    3.3V to 3.3V
+'Connect SDCard    Vss to GND
+'Connect SDCard    CLK to P5
+'Connect SDCard    CS  to P7
+'Connect SDCard    DO  to P4
+'Connect SDCard    DI  to P6
+
 
 Con
   _clkmode = xtal1 + pll16x            'defining clock mod
