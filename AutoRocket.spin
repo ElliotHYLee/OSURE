@@ -38,13 +38,9 @@ VAR
   long servoPosition
 
  'PID Variables
-  long K              'PID Gain
-  long cur_error      'Current Error
-  long pre_error      'Previous Error
   long output         'PID Output
   long pidStack[128]      'COG Stack
   byte pidCogId            'cog number
-  long dt             'Integral Time
 
   long Kp, Ki, Kd
   
@@ -78,7 +74,7 @@ PUB Main
 @ return non
 }}
   usb.quickstart
-
+  startUsb 
 
  'attitude start
   startSensor
@@ -92,8 +88,8 @@ PUB Main
 
   startPid
   usb.str(string("on"))
-  waitcnt(cnt + clkfreq*3)
-  startUsb   
+
+  
    
 ''=====================================================
 ''Servo Control - David
@@ -195,6 +191,7 @@ PRI runSensor
   repeat
     sensor.run
 
+
 ''=====================================================
 ''PID Region - Chad & Jackie
 ''Number of Cog Used : 1
@@ -227,7 +224,8 @@ PUB loop
   repeat
     sensor.getEulerAngle(@eAngle)
     sensor.getGyro(@gyro)
-    calcOutput 
+    calcOutput
+ 
 
 PUB calcOutput | e, P, I, D
 
@@ -251,6 +249,7 @@ PRI runUsb
 
 PRI sendMsg
 
+  usb.clear
   usb.str(String("output: "))
   usb.decln(output)
 
@@ -267,4 +266,4 @@ PRI sendMsg
   usb.dec(eAngle[1])
   usb.str(String(", "))       
   usb.decLn(eAngle[2])
-     
+  waitcnt(cnt + clkfreq/10)   

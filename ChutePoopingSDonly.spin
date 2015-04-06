@@ -20,13 +20,18 @@ Con
 '  START_ALT     = 800                ' Your starting altitude in feet.
 
 VAR
-
+  'ONLY for attitude sensor
+  byte sensorCodId
+  long sensorStack[128]
+  
 OBJ
   alt   : "29124_altimeter"
 '  pst   : "parallax serial terminal plus"
   system : "Propeller Board of Education"
   sd     : "PropBOE MicroSD"
-
+  
+ ' sensor obj
+  sensor : "tier2MPUMPL.spin"
 Pub ChutePooping   | direction, a, olda, base, stop, elapsed,  Poop
 
   system.Clock(80_000_000)
@@ -58,9 +63,9 @@ Pub ChutePooping   | direction, a, olda, base, stop, elapsed,  Poop
     sd.WriteDec( a )                                     ' Writes the altitude in Feet *100
 
     'check which way we are going
-    if ((a - olda) > 5)  &  (direction < 5)  &  ((a - base) > 100)       'we have gone up in altitude by 5 cm, but max it out at 5
+    if ((a - olda) > 5)  AND  (direction < 5)  AND  ((a - base) > 100)       'we have gone up in altitude by 5 cm, but max it out at 5
       direction := (direction + 1)                        'increase direction by 1)
-    elseif ((a - olda) < -5)  & ((a - base) > 500)                             'we have goine down in altitude by 5 cm
+    elseif ((a - olda) < -5)  AND ((a - base) > 500)                             'we have goine down in altitude by 5 cm
       direction := (direction - 1)                        'decrease direction by 1
     elseif ((a-base) < 100)
       'do nothing because we have not raised our altitude more than 1 meter from our starting altitude                        
@@ -86,7 +91,7 @@ Pub ChutePooping   | direction, a, olda, base, stop, elapsed,  Poop
     sd.WriteDec( a )                                     ' Writes the altitude in Feet *100
 
     'check which way we are going
-    if ((a - olda) > 5)  &  (direction < 5)         'we have gone up in altitude by 10 cm, but max it out at 5
+    if ((a - olda) > 5)  AND  (direction < 5)         'we have gone up in altitude by 10 cm, but max it out at 5
       direction := (direction + 1)                        'increase direction by 1)
     elseif (a - olda) < -5                               'we have goine down in altitude by 10 cm
       direction := (direction - 1)                        'decrease direction by 1
@@ -98,4 +103,29 @@ Pub ChutePooping   | direction, a, olda, base, stop, elapsed,  Poop
   
   sd.FileClose
   sd.Unmount
-  sd.Stop    
+  sd.Stop
+
+
+''=====================================================
+''Sensor Region 
+''Number of Cog Used : 1
+''=====================================================
+PRI stopSensor
+  if sensorCodId
+    cogstop(sensorCodId ~ - 1)
+  
+PRI startSensor 
+  sensor.initSensor(15,14) ' scl, sda, cFilter portion in %
+  sensor.setMpu(%000_11_000, %000_01_000) '2000deg/s, 4g
+  stopSensor
+  sensorCodId:= cognew(runSensor, @sensorStack) + 1
+
+PRI runSensor
+  repeat
+    sensor.run
+
+{
+  repeat
+    sensor.getEulerAngle(@eAngle)
+    sensor.getGyro(@gyro)
+}    
