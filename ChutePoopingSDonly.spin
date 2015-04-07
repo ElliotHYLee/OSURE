@@ -7,10 +7,10 @@
 
 'Connect SDCard    3.3V to 3.3V
 'Connect SDCard    Vss to GND
-'Connect SDCard    CLK to P5
-'Connect SDCard    CS  to P7
-'Connect SDCard    DO  to P4
-'Connect SDCard    DI  to P6
+'Connect SDCard    CLK to P7
+'Connect SDCard    CS  to P6
+'Connect SDCard    DO  to P5
+'Connect SDCard    DI  to P4
 
 
 Con
@@ -28,23 +28,24 @@ OBJ
   alt   : "29124_altimeter"
 '  pst   : "parallax serial terminal plus"
   system : "Propeller Board of Education"
-  sd     : "PropBOE MicroSD"
+  sd     : "RocketPropBOE MicroSD"
   
  ' sensor obj
   sensor : "tier2MPUMPL.spin"
-Pub ChutePooping   | direction, a, olda, base, stop, elapsed,  Poop
+Pub ChutePooping   | direction, a, olda, base, stop, elapsed,  Poop , eAngle, accel, gyro  
 
   system.Clock(80_000_000)
   Poop := 0
   direction := 0   'the direction of the rocket. >0 means going up. <0 means going down
 
+  'Start the altimeter
                    '(SCL, SDA, true = background  false = foreground)
-  alt.start_explicit(15  , 14  , true)              ' Start altimeter for QuickStart with FOREGROUND processing.
+  alt.start_explicit(15  , 14  , true)              ' Start altimeter explicitly with BACKGROUND processing.
   alt.set_resolution(alt#HIGHEST)                        ' Set to highest resolution.
 '  alt.set_altitude(alt.m_from_ft(START_ALT * 100))       ' Set the starting altitude, based on average local pressure.                  
-  a := alt.altitude(alt.average_press)
+  a := alt.altitude(alt.average_press)                     'take the first reading
 
-  
+  'start the SD card
   sd.Mount(0)
   sd.FileDelete(String("Altitude.txt"))                   'Delete any old files
   sd.FileNew(String("Altitude.txt"))                      'Make a new file
@@ -128,4 +129,5 @@ PRI runSensor
   repeat
     sensor.getEulerAngle(@eAngle)
     sensor.getGyro(@gyro)
+    sensor.getAcc(@accel)
 }    
