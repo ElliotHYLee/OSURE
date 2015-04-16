@@ -22,15 +22,17 @@ Con
 VAR
 '  long h  'altitude
 '  long htarget, currentAltitude
-  long poopCogId, targetAltitude, poopStack[128] 
+  long poopCogId, targetAltitude, poopStack[128], lineNumber, fileName, numberOfFile
 
 OBJ
   alt   : "29124_altimeter"
   pst   : "parallax serial terminal plus"
   system : "Propeller Board of Education"
   sd     : "PropBOE MicroSD"
-
+  strConv : "String.spin"
+  strOp  : "STRINGS.spin"
 Pub ChutePooping   | j, direction, a, olda, base, stop, elapsed,  Poop
+
 
   system.Clock(80_000_000)
   Poop := FALSE
@@ -43,17 +45,31 @@ Pub ChutePooping   | j, direction, a, olda, base, stop, elapsed,  Poop
 '  alt.set_altitude(alt.m_from_ft(START_ALT * 100))       ' Set the starting altitude, based on average local pressure.                  
   a := alt.altitude(alt.average_press)
 
-  
-  sd.Mount(0)
-  sd.FileDelete(String("Altitude.txt"))                   'Delete any old files
-  sd.FileNew(String("Altitude.txt"))                      'Make a new file
-  sd.FileOpen(String("Altitude.txt"), "W")                'Open file for writing
-  sd.WriteStr(String("PAltCM    Dir    Poop    "))          'Print Header 
-  
 
   base:=alt.altitude(alt.average_press)
   sd.WriteDec(base)
+  
+'=====================================================================
+'' Defining file Names and convesion to strings from integer
+'' and opening a file
+                         
+  numberOfFile := 0
 
+  fileName := strConv.integerToDecimal(numberOfFile, 3)
+  'fileName =+000
+  fileName := strOp.SubStr(fileName, 1,3)
+  'fileName = 000
+  fileName := strOp.combine(String("Altitude"), fileName))
+  'fileName = Altitude000
+  fileName := strOp.combine(fileName, String(".txt"))
+  'fileName = Altitude000.txt
+
+  sd.Mount(0)
+  prepSD(fileName)
+
+  lineNumber :=0
+  
+'=====================================================================
   repeat
     olda := a                                            ' store previous alitiude in olda
     a := alt.altitude(alt.average_press)                 ' Get the current altitude in cm, from new average local pressure.
@@ -92,6 +108,36 @@ Pub ChutePooping   | j, direction, a, olda, base, stop, elapsed,  Poop
       pst.rxflush
       pst.char(pst#CS)
 
-  sd.FileClose
+    lineNumber++
+    if lineNumber > 6000
+      sd.FileClose
+      numberOfFile++
+      lineNumber := 0
+      prepSD(getFileNamePtr)
+      
   sd.Unmount
-  sd.Stop    
+  sd.Stop
+    
+
+PUB prepSD(fid)
+
+  sd.FileDelete(fid)                   'Delete any old files
+  sd.FileNew(fid)                      'Make a new file
+  sd.FileOpen(fid, "W")                'Open file for writing
+  sd.WriteStr(String("PAltCM    Dir    Poop    "))          'Print Header 
+  
+
+
+PUB getFileNamePtr
+
+
+  fileName := strConv.integerToDecimal(numberOfFile, 3)
+  'fileName =+000
+  fileName := strOp.SubStr(fileName, 1,3)
+  'fileName = 000
+  fileName := strOp.combine(String("Altitude"), fileName))
+  'fileName = Altitude000
+  fileName := strOp.combine(fileName, String(".txt"))
+  'fileName = Altitude000.txt
+
+  return fileName
