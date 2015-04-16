@@ -7,10 +7,10 @@
 
 'Connect SDCard    3.3V to 3.3V
 'Connect SDCard    Vss to GND
-'Connect SDCard    CLK to P5
-'Connect SDCard    CS  to P7
-'Connect SDCard    DO  to P4
-'Connect SDCard    DI  to P6
+'Connect SDCard    CLK to P7
+'Connect SDCard    CS  to P6
+'Connect SDCard    DO  to P5
+'Connect SDCard    DI  to P4
 
 
 Con
@@ -31,13 +31,12 @@ OBJ
   sd     : "PropBOE MicroSD"
   strConv : "String.spin"
   strOp  : "STRINGS.spin"
-Pub ChutePooping   | j, direction, a, olda, base, stop, elapsed,  Poop
+Pub ChutePooping   | direction, a, olda, base, stop, elapsed,  Poop
 
 
   system.Clock(80_000_000)
   Poop := FALSE
   direction := 0   'the direction of the rocket. >0 means going up. <0 means going down
-  j := 0
 
                    '(SCL, SDA, true = background  false = foreground)
   alt.start_explicit(15  , 14  , true)              ' Start altimeter for QuickStart with FOREGROUND processing.
@@ -46,8 +45,7 @@ Pub ChutePooping   | j, direction, a, olda, base, stop, elapsed,  Poop
   a := alt.altitude(alt.average_press)
 
 
-  base:=alt.altitude(alt.average_press)
-  sd.WriteDec(base)
+
   
 '=====================================================================
 '' Defining file Names and convesion to strings from integer
@@ -70,6 +68,10 @@ Pub ChutePooping   | j, direction, a, olda, base, stop, elapsed,  Poop
   lineNumber :=0
   
 '=====================================================================
+
+  base:=alt.altitude(alt.average_press)
+  sd.WriteDec(base)
+
   repeat
     olda := a                                            ' store previous alitiude in olda
     a := alt.altitude(alt.average_press)                 ' Get the current altitude in cm, from new average local pressure.
